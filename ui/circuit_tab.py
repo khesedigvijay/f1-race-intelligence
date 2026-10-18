@@ -116,8 +116,9 @@ def render_circuit_tab(session_data: dict):
         apex_coords = []
         for _, ap in apex_df.iterrows():
             closest_idx = (tel["Distance"] - ap["Distance"]).abs().idxmin()
+            c_num = int(float(ap["Corner"]))
             apex_coords.append({
-                "Corner": f"T{ap['Corner']}",
+                "Corner": f"T{c_num}",
                 "X": tel.loc[closest_idx, "X"],
                 "Y": tel.loc[closest_idx, "Y"],
                 "Speed": ap["ApexSpeed"]
@@ -141,6 +142,8 @@ def render_circuit_tab(session_data: dict):
     fig.update_layout(
         yaxis=dict(scaleanchor="x", scaleratio=1, showgrid=False, zeroline=False, showticklabels=False),
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        plot_bgcolor="#0E1117",
+        paper_bgcolor="#0E1117",
         height=620
     )
     apply_f1_plot_theme(fig, title=f"{circuit_name} - {driver} ({color_metric} Profile)", height=620)
@@ -149,4 +152,6 @@ def render_circuit_tab(session_data: dict):
     # Summary corner speeds
     if apexes:
         st.markdown("#### 🎯 Corner Velocity Breakdown")
-        st.dataframe(pd.DataFrame(apexes), use_container_width=True, height=220)
+        display_apex_df = pd.DataFrame(apexes).copy()
+        display_apex_df["Corner"] = display_apex_df["Corner"].apply(lambda c: f"Turn {int(float(c))}")
+        st.dataframe(display_apex_df, use_container_width=True, height=220)

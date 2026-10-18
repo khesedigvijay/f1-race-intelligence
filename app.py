@@ -76,7 +76,7 @@ with st.sidebar:
     selected_session = st.selectbox("Session", session_types, index=0)
 
     # Demo Mode Override
-    force_demo = st.checkbox("Force Demo Mode (Offline)", value=not FASTF1_AVAILABLE, help="Loads rich synthetic Bahrain 2024 GP data without querying external servers.")
+    force_demo = st.checkbox("Force Demo Mode (Offline)", value=False, help="Loads rich synthetic Bahrain 2024 GP data without querying external servers.")
 
     # Load Button
     load_clicked = st.button("🚀 Load Intelligence Data", use_container_width=True)

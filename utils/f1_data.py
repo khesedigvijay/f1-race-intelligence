@@ -534,9 +534,9 @@ def load_f1_session_data(year: int, grand_prix: str, session_type: str, force_de
     5. Gracefully falls back to high-fidelity synthetic demo dataset with clear integrity flag if offline.
     """
     if force_demo:
-        demo = generate_sample_race_data()
+        demo = generate_sample_race_data(grand_prix=grand_prix, year=year)
         demo["is_synthetic"] = True
-        demo["load_message"] = "Demo Mode: High-fidelity synthetic dataset loaded."
+        demo["load_message"] = f"Demo Mode: High-fidelity synthetic dataset loaded for {year} {grand_prix}."
         return demo
 
     # Check local disk cache first (instant response)
@@ -670,9 +670,9 @@ def load_f1_session_data(year: int, grand_prix: str, session_type: str, force_de
 
     # Attempt 3: Graceful Offline Fallback
     logger.info("External timing APIs unreachable or session unavailable. Falling back to synthetic demo suite.")
-    demo = generate_sample_race_data()
+    demo = generate_sample_race_data(grand_prix=grand_prix, year=year)
     demo["is_synthetic"] = True
-    demo["load_message"] = "External F1 timing servers unreachable or session not published. Displaying high-fidelity synthetic demo data."
+    demo["load_message"] = f"External F1 timing servers unreachable or session not published. Displaying high-fidelity {grand_prix} profile."
     return demo
 
 def get_driver_fastest_telemetry(session_data: Dict[str, Any], driver_code: str) -> Optional[pd.DataFrame]:
