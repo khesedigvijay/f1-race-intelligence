@@ -50,15 +50,33 @@ def render_circuit_tab(session_data: dict):
         "nGear": "Plasma"
     }
 
+    circuit_name = session_data.get('circuit_name') or session_data.get('official_name') or session_data.get('event_name', 'Circuit')
+    location = session_data.get('location', '')
+    country = session_data.get('country', '')
+    loc_str = f" | {location}, {country}" if location and country else ""
+    st.markdown(f"**Circuit Layout:** `{circuit_name}`{loc_str}")
+
     fig = go.Figure()
 
-    # Base track scatter line with continuous color
+    # 1. Base track asphalt line (wide continuous track outline)
     fig.add_trace(go.Scatter(
         x=tel["X"],
         y=tel["Y"],
-        mode="markers",
+        mode="lines",
+        line=dict(color="#2E3346", width=8),
+        name="Circuit Surface",
+        hoverinfo="skip",
+        showlegend=False
+    ))
+
+    # 2. Continuous telemetry racing line
+    fig.add_trace(go.Scatter(
+        x=tel["X"],
+        y=tel["Y"],
+        mode="lines+markers",
+        line=dict(color="rgba(0,0,0,0)", width=1),
         marker=dict(
-            size=6,
+            size=5,
             color=tel[color_metric],
             colorscale=colorscales.get(color_metric, "Turbo"),
             colorbar=dict(
@@ -74,14 +92,27 @@ def render_circuit_tab(session_data: dict):
             for d, s, th, br, g in zip(tel["Distance"], tel["Speed"], tel["Throttle"], tel["Brake"], tel.get("nGear", [0]*len(tel)))
         ],
         hoverinfo="text",
-        name="Racing Line"
+        name="Telemetry Heatmap"
     ))
 
-    # Detect apexes and plot corner pins
+    # 3. Start / Finish Line Pin
+    if not tel.empty:
+        fig.add_trace(go.Scatter(
+            x=[tel.iloc[0]["X"]],
+            y=[tel.iloc[0]["Y"]],
+            mode="markers+text",
+            text=["🏁 Start / Finish"],
+            textposition="top right",
+            textfont=dict(color="#FFFFFF", size=11, family="Arial Black"),
+            marker=dict(size=12, color="#FFFFFF", symbol="square-open-dot", line=dict(width=2, color="#E10600")),
+            name="Start / Finish",
+            hoverinfo="skip"
+        ))
+
+    # 4. Detect apexes and plot corner pins
     apexes = detect_apexes(tel)
     if apexes:
         apex_df = pd.DataFrame(apexes)
-        # Find nearest X, Y for apex distances
         apex_coords = []
         for _, ap in apex_df.iterrows():
             closest_idx = (tel["Distance"] - ap["Distance"]).abs().idxmin()
@@ -112,7 +143,7 @@ def render_circuit_tab(session_data: dict):
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
         height=620
     )
-    apply_f1_plot_theme(fig, title=f"{session_data.get('circuit_name', 'Circuit')} - {driver} Fastest Lap Profile", height=620)
+    apply_f1_plot_theme(fig, title=f"{circuit_name} - {driver} ({color_metric} Profile)", height=620)
     st.plotly_chart(fig, use_container_width=True)
 
     # Summary corner speeds

@@ -42,11 +42,23 @@ _openf1_session.headers.update({"User-Agent": "F1RaceIntelligenceDashboard/1.0"}
 def _safe_openf1_query(endpoint: str, params: Optional[Dict[str, Any]] = None, timeout: int = 12) -> Optional[List[Dict[str, Any]]]:
     """
     Safely executes an OpenF1 API request and guarantees a list of dictionary records.
+    Correctly constructs filter operators (>=, <=, >, <) without duplicate equals signs or key encoding.
     Returns None if the endpoint fails, returns an error object, or is empty.
     """
     url = f"https://api.openf1.org/v1/{endpoint}"
     try:
-        resp = _openf1_session.get(url, params=params, timeout=timeout)
+        if params:
+            query_items = []
+            for k, v in params.items():
+                if k.endswith((">=", "<=", ">", "<")):
+                    query_items.append(f"{k}{v}")
+                else:
+                    query_items.append(f"{k}={v}")
+            full_url = f"{url}?{'&'.join(query_items)}"
+            resp = _openf1_session.get(full_url, timeout=timeout)
+        else:
+            resp = _openf1_session.get(url, timeout=timeout)
+
         if resp.status_code != 200:
             logger.warning(f"OpenF1 {endpoint} returned status {resp.status_code}")
             return None
@@ -667,11 +679,12 @@ def get_driver_fastest_telemetry(session_data: Dict[str, Any], driver_code: str)
     """
     Extracts high-resolution telemetry for a driver's fastest lap in the loaded session.
     """
+    gp_target = session_data.get("circuit_name") or session_data.get("event_name", "Bahrain")
     if session_data.get("is_synthetic", False):
         tel_dict = session_data.get("telemetry", {})
         if driver_code in tel_dict:
             return tel_dict[driver_code].copy()
-        return generate_telemetry_profile(driver_code)
+        return generate_telemetry_profile(driver_code, grand_prix=gp_target)
 
     # 1. Check if OpenF1 session
     if "openf1_session_key" in session_data:
@@ -748,7 +761,7 @@ def get_driver_fastest_telemetry(session_data: Dict[str, Any], driver_code: str)
         except Exception as e:
             logger.warning(f"FastF1 fastest lap telemetry error for {driver_code}: {e}")
 
-    return generate_telemetry_profile(driver_code)
+    return generate_telemetry_profile(driver_code, grand_prix=gp_target)
 
 def synchronize_telemetry_by_distance(
     tel1: pd.DataFrame, 

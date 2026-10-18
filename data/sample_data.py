@@ -8,15 +8,89 @@ from typing import Dict, Any, Tuple
 import pandas as pd
 import numpy as np
 
-def generate_circuit_coordinates(n_points: int = 1000) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def generate_circuit_coordinates(circuit_name: str = "Bahrain", n_points: int = 1000) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Generates realistic 2D track coordinates (X, Y) resembling a modern GP circuit loop
+    Generates realistic 2D track coordinates (X, Y) corresponding to specific F1 circuits
     along with cumulative distance.
     """
     t = np.linspace(0, 2 * np.pi, n_points, endpoint=False)
-    # Bahrain / generalized modern F1 circuit shape profile with straights, hairpins, and chicanes
-    x = 1800 * np.cos(t) + 400 * np.cos(3 * t) - 250 * np.sin(2 * t)
-    y = 900 * np.sin(t) + 450 * np.sin(2 * t) + 150 * np.cos(4 * t)
+    c_lower = str(circuit_name).lower()
+
+    if "silverstone" in c_lower or "british" in c_lower:
+        # Silverstone: flowing high-speed layout with Maggotts-Becketts, Hangar straight, Stowe, Copse
+        x = 2200 * np.cos(t) + 600 * np.cos(2 * t) - 400 * np.sin(3 * t)
+        y = 1200 * np.sin(t) - 500 * np.sin(2 * t) + 300 * np.cos(4 * t)
+        track_len = 5891.0
+    elif "monaco" in c_lower or "monte carlo" in c_lower:
+        # Monaco: tight winding street circuit with hairpin, harbor chicane, and Rascasse
+        x = 900 * np.cos(t) - 350 * np.cos(2 * t) + 250 * np.sin(3 * t) - 180 * np.cos(5 * t)
+        y = 500 * np.sin(t) + 320 * np.sin(2 * t) - 220 * np.cos(3 * t) + 120 * np.sin(4 * t)
+        track_len = 3337.0
+    elif "monza" in c_lower or "italian" in c_lower or "italy" in c_lower:
+        # Monza: Temple of Speed with long straights, Curva Grande, Lesmos, Ascari, Parabolica
+        x = 2800 * np.cos(t) + 400 * np.cos(3 * t)
+        y = 600 * np.sin(t) + 300 * np.sin(2 * t) + 150 * np.sin(5 * t)
+        track_len = 5793.0
+    elif "spa" in c_lower or "belgian" in c_lower:
+        # Spa-Francorchamps: Ardennes roller-coaster, Kemmel, Pouhon, Blanchimont
+        x = 3100 * np.cos(t) - 800 * np.cos(2 * t) + 400 * np.sin(3 * t)
+        y = 1400 * np.sin(t) + 700 * np.sin(2 * t) - 300 * np.cos(4 * t)
+        track_len = 7004.0
+    elif "suzuka" in c_lower or "japanese" in c_lower or "japan" in c_lower:
+        # Suzuka: Figure-8 crossover layout with Esses, Degners, Spoon, 130R
+        x = 1800 * np.sin(t) + 600 * np.sin(3 * t)
+        y = 1200 * np.cos(2 * t) + 300 * np.sin(t)
+        track_len = 5807.0
+    elif "spielberg" in c_lower or "austria" in c_lower or "red bull" in c_lower or "styrian" in c_lower:
+        # Red Bull Ring: short punchy high-elevation layout with 3 main straights
+        x = 1600 * np.cos(t) + 500 * np.cos(2 * t)
+        y = 800 * np.sin(t) - 400 * np.sin(2 * t)
+        track_len = 4318.0
+    elif "interlagos" in c_lower or "brazil" in c_lower or "sao paulo" in c_lower:
+        # Interlagos: anti-clockwise bowl, Senna S, Curva do Sol, Junção
+        x = 1500 * np.cos(t) + 400 * np.sin(2 * t) - 300 * np.cos(3 * t)
+        y = 1100 * np.sin(t) + 500 * np.cos(2 * t)
+        track_len = 4309.0
+    elif "baku" in c_lower or "azerbaijan" in c_lower:
+        # Baku City: 2.2km flat-out straight along Caspian Sea and narrow castle section
+        x = 2400 * np.cos(t) - 700 * np.cos(3 * t)
+        y = 700 * np.sin(t) + 400 * np.sin(3 * t)
+        track_len = 6003.0
+    elif "marina bay" in c_lower or "singapore" in c_lower:
+        # Marina Bay: technical high-downforce street night race with tight 90-degree corners
+        x = 1400 * np.cos(t) + 500 * np.cos(3 * t) - 300 * np.sin(5 * t)
+        y = 1000 * np.sin(t) + 400 * np.sin(3 * t) + 200 * np.cos(4 * t)
+        track_len = 4940.0
+    elif "austin" in c_lower or "united states" in c_lower or "cota" in c_lower:
+        # COTA: Steep uphill Turn 1, Maggotts-inspired Esses, long back straight
+        x = 2000 * np.cos(t) + 600 * np.sin(2 * t) - 400 * np.cos(3 * t)
+        y = 1300 * np.sin(t) + 500 * np.sin(3 * t) - 200 * np.cos(4 * t)
+        track_len = 5513.0
+    elif "las vegas" in c_lower:
+        # Las Vegas Strip: ultra-fast street circuit down Las Vegas Boulevard
+        x = 2600 * np.cos(t) - 400 * np.cos(3 * t)
+        y = 700 * np.sin(t) + 350 * np.sin(2 * t)
+        track_len = 6201.0
+    elif "montreal" in c_lower or "canad" in c_lower or "villeneuve" in c_lower:
+        # Circuit Gilles Villeneuve: Ile Notre-Dame hairpins and Wall of Champions
+        x = 2500 * np.cos(t) + 200 * np.cos(3 * t)
+        y = 450 * np.sin(t) + 250 * np.sin(2 * t)
+        track_len = 4361.0
+    elif "melbourne" in c_lower or "australi" in c_lower or "albert park" in c_lower:
+        # Albert Park: fast flowing lakeside street-park layout
+        x = 1900 * np.cos(t) + 300 * np.cos(2 * t)
+        y = 1300 * np.sin(t) + 400 * np.sin(2 * t)
+        track_len = 5278.0
+    elif "zandvoort" in c_lower or "dutch" in c_lower or "netherlands" in c_lower:
+        # Zandvoort: undulating dunes with banked corners (Tarzan & Arie Luyendyk)
+        x = 1600 * np.cos(t) + 500 * np.sin(2 * t)
+        y = 1000 * np.sin(t) - 400 * np.cos(3 * t)
+        track_len = 4259.0
+    else:
+        # Bahrain / Sakhir & standard modern GP loop
+        x = 1800 * np.cos(t) + 400 * np.cos(3 * t) - 250 * np.sin(2 * t)
+        y = 900 * np.sin(t) + 450 * np.sin(2 * t) + 150 * np.cos(4 * t)
+        track_len = 5412.0
     
     # Calculate distance along the circuit
     dx = np.diff(x, append=x[0])
@@ -24,24 +98,21 @@ def generate_circuit_coordinates(n_points: int = 1000) -> Tuple[np.ndarray, np.n
     step_dist = np.sqrt(dx**2 + dy**2)
     dist = np.cumsum(step_dist)
     total_len = dist[-1]
-    # Scale to ~5412 meters (Bahrain standard length)
-    scale = 5412.0 / total_len
+    scale = track_len / total_len
     x = x * scale
     y = y * scale
     dist = dist * scale
     return x, y, dist
 
-def generate_telemetry_profile(driver: str, base_speed_delta: float = 0.0) -> pd.DataFrame:
+def generate_telemetry_profile(driver: str, grand_prix: str = "Bahrain", base_speed_delta: float = 0.0) -> pd.DataFrame:
     """
     Generates detailed lap telemetry (Speed, Throttle, Brake, Gear, RPM, X, Y, Distance)
-    for a single representative flying lap.
+    for a single representative flying lap tailored to the selected Grand Prix circuit.
     """
     np.random.seed(42 if driver == "VER" else 99)
-    x, y, dist = generate_circuit_coordinates(1100)
+    x, y, dist = generate_circuit_coordinates(circuit_name=grand_prix, n_points=1100)
     n = len(dist)
     
-    # Corners at approximate distances (m):
-    # T1-T3 (600-900m), T4 (1500m), T8-T10 (2400-2800m), T11 (3300m), T14-T15 (4800-5100m)
     speed = np.zeros(n)
     throttle = np.zeros(n)
     brake = np.zeros(n)
